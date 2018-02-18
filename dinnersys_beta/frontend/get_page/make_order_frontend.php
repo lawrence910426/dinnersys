@@ -1,6 +1,6 @@
-﻿<?php 
+<?php 
 session_start();
-require_once('../../backend/user/user.php');
+require_once(__DIR__ . '/../../backend/user/user.php');
 
 if($_SESSION['user'] == null) die("haven't login yet. <br>");
 $prev = unserialize($_SESSION['user'])->get_prev_code();

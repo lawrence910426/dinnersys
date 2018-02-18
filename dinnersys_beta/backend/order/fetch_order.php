@@ -1,23 +1,30 @@
 <?php
+# 這只是一些中文字，避免檔案被存成ANSI碼。
 
-require_once('order.php');
+require_once(__DIR__ . '/order.php');
 
 function fetch_order($selection_criteria)
 {
     $mysqli = $_SESSION['sql_server'];
-    $today = date('Y-m-d');
-    $sql = "SELECT * FROM orders WHERE order_date = \"$today\"" . $selection_criteria. ";";
+    $sql = "SELECT * FROM orders ,users " . $selection_criteria. 
+    " ORDER BY orders.user_id, orders.receive_date;";
     
     $statement = $mysqli->prepare($sql);
 
     $statement->execute();
     $statement->bind_result(
         $user_id, 
-		$user_name, 
 		$dish_id ,
 		$order_date ,
 		$charge ,
-		$charge_paid);
+		$charge_paid ,
+        $receive_date ,
+        
+        $user_id_key ,
+        $user_name ,
+        $password ,
+        $previleges ,
+        $class_no);
     
     $orders = null;
     $counter = 0;
@@ -34,11 +41,15 @@ function fetch_order($selection_criteria)
                 new user(
                     $user_id
                     ,$user_name
-                    ,-1
+                    ,$previleges
+                    ,$class_no
                 ) ,
-                $order_date
+                $order_date,
+                $receive_date
             );
         $order->paid = $charge_paid;
+        $order->receive_date = $receive_date;
+        $order->order_date = $order_date;
         $orders[$counter++] = $order;
     }
         

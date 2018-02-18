@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once("../../backend/user/user.php");
+require_once(__DIR__ . "/../../backend/user/user.php");
 
 $user = unserialize($_SESSION['user']);
 $user_id = $user->user_id;
@@ -24,7 +24,6 @@ $user_id = $user->user_id;
             <input type="submit" value="確認更改密碼"/>
             
             <input type="hidden" name="cmd" id="cmd" value="change_password"/>
-            <?php echo "<input type=\"hidden\" name=\"user_id\" id=\"user_id\" value=\"$user_id\"/>"?>
         </form>
 
     </body>

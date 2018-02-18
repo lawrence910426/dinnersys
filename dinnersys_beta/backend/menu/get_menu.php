@@ -1,7 +1,7 @@
 <?php
 
-require_once("dish.php");
-require_once("./user/user.php");
+require_once(__DIR__ . "/dish.php");
+require_once(__DIR__ . "/../user/user.php");
 
 function get_menu()
 {

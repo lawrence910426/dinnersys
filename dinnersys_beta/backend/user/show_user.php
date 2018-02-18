@@ -1,8 +1,7 @@
-
 <?php
 
 $user = unserialize($_SESSION['user']);
-if ($user->user_id == -1 or $user->user_name == "" or $user->previleges == 0) die("error");
+if ($user->user_id == -1 or $user->user_name == "") die("error");
 $prev_name = $user->get_prev_string();
 $ip = user::get_ip();
 
