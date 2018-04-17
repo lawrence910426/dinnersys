@@ -21,21 +21,25 @@ class json_output
         $json = "[";
         $has_run = false;
         $counter = 1;
-
+        
         foreach ($var as $key => $value)
         {
             if ($has_run == true)
                 $json .= ',';
             else
                 $has_run = true;
-
+            
             if (class_implements($value)['json_format'] == 'json_format')
             {
                 $obj_data = $value->get_json();
                 $json .= $obj_data;
-            } else
+            } 
+            else if(is_array($value))
             {
-                $json .= "{}";
+                $json .= self::array_to_json($value);
+            }
+            else{
+                $json .= '{"' . self::filter($key) . '":"' . self::filter($value) . '"}';
             }
         }
 
@@ -59,17 +63,17 @@ class json_output
         echo $json;
     }
     
-    public static function get_date()
+    public static function date_to_json($arr)
     {
-        $arr = date_api::get_date_array();
         $ans = "["; $first = true;
         foreach($arr as $weekday => $value)
             if($first){
                 $ans .= "{\"$weekday\":\"$value\"}";
                 $first = false;
             }
-            else $ans .= ",{\"$weekday\":\"$value\"}";
-        echo $ans . "]";
+            else
+                $ans .= ",{\"$weekday\":\"$value\"}";
+        return $ans . "]";
     }
 }
 
