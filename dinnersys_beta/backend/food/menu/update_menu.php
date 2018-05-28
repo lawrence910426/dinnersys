@@ -7,7 +7,7 @@ function update_menu($id ,$charge ,$name ,$ingre ,$dish ,$vege ,$idle)
     $mysqli = $_SESSION['sql_server'];
     $statement = $mysqli->prepare($sql_command);    
     
-    $statement->bind_param('iisiiii' ,$id ,$charge ,$name ,$ingre ,$dish ,$vege ,$idle);
+    $statement->bind_param('iisbbib' ,$id ,$charge ,$name ,$ingre ,$dish ,$vege ,$idle);
     $statement->execute();
 }
 

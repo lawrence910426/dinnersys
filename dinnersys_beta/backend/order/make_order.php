@@ -2,7 +2,7 @@
 
 function make_order($user_id ,$dish_id ,$esti_recv)
 {   
-    $sql_command = "SELECT make_order(? ,? ,?)";
+    $sql_command = "CALL make_order(? ,? ,?)";
     
     $mysqli = $_SESSION['sql_server'];
     $statement = $mysqli->prepare($sql_command);

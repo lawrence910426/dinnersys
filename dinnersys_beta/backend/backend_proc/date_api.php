@@ -5,8 +5,7 @@ class date_api
     public static function is_valid_time($date)
     {
         $date_obj = DateTime::createFromFormat('Y/m/d-H:i:s', $date);
-        if($date_obj === false) throw new Exception("Invalid format.");
-        if($date_obj->getTimestamp() <= 0) throw new Exception("Over unix timestamp.");
+        if($date_obj === false) throw new Exception("Invalid date.");
         return $date_obj;
     }
     
@@ -38,27 +37,24 @@ class date_api
     
     public static function check_recv_time($time)
     {
-        $time = self::is_valid_time($time); 
-        $time = $time->getTimestamp() - 6 * 60 * 60;                        # timezone accurate. IDK why.
-        $week = 7 * 24 * 60 * 60;
-        $start_of_week = (floor($time / $week) * $week) + (4 * 24 * 60 * 60);   # 1970 ,Jan ,01 (Thu) 00:00:00.
-                
-        $invalid_lower_bound = $start_of_week + 5 * 24 * 60 * 60;
-        $invalid_upper_bound = $start_of_week + 7 * 24 * 60 * 60;
+        $start_of_week = strtotime("last monday" ,strtotime("tomorrow"));
+        $start_of_week = floor($start_of_week / 24 / 60 / 60) * 24 * 60 * 60;
+        $time = self::is_valid_time($time); $time = $time->getTimestamp() - 6 * 60 * 60;        # timezone accurate. IDK why.
+        $lower_bound = time() + 30 * 60;                                                        # at least 30 minutes. For the factory to make the dish.
+        $upper_bound = $start_of_week + 5 * 24 * 60 * 60 - 8 * 60 * 60;                         # timezone accurate.
         
-        #echo $start_of_week . ' ' . $invalid_lower_bound . ' ' . $time . ' ' . $invalid_upper_bound . '<br>';
+        echo $lower_bound . ' ' . $time . ' ' . $upper_bound . '<br>';
         
-        if($invalid_lower_bound < $time && $time < $invalid_upper_bound)
-            throw new Exception("六日無法點餐");
-        
-        return date('Y/m/d-H:i:s', $time + 6 * 60 * 60);    # make the timezone right again.
+        if($lower_bound <= $time && $time < $upper_bound)
+            return date('Y/m/d-H:i:s', $time + 6 * 60 * 60);                                    # make the timezone right again.
+        else
+            throw new Exception("Invalid datetime.");
     }
     
-    public static function get_datetime_array() 
+    public static function get_datetime_array()
     {
-        $period = strtotime("last monday" ,strtotime("tomorrow"));
-        $week = 7 * 24 * 60 * 60;
-        $start_of_week = (floor($period / $week) * $week) + (4 * 24 * 60 * 60);   # 1970 ,Jan ,01 (Thu) 00:00:00.
+        $start_of_week = strtotime("last monday" ,strtotime("tomorrow"));
+        $start_of_week = floor($start_of_week / 24 / 60 / 60) * 24 * 60 * 60;
         $lower_bound = time() + 30 * 60;
         return [ 
             'order_lower_bound' => $lower_bound ,

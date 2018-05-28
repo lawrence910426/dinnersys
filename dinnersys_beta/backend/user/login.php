@@ -16,7 +16,7 @@ function login($login_id, $pswd ,$device_id)
     if($statement->fetch())
         $account = new user($id ,$name ,$class_id);   
         
-    if($account == null) throw new Exception("No account.");
+    if($account == null) throw new Exception();
     
     return $account;
 }
