@@ -22,12 +22,14 @@ class backend_main
         require_once (__DIR__ . '/../food/menu/update_menu.php');
         require_once (__DIR__ . '/../food/menu/menu.php');
         require_once (__DIR__ . '/../food/factory/factory.php');
+        require_once (__DIR__ . '/../food/factory/get_factory_info.php');
         require_once (__DIR__ . '/../food/dish/update_dish.php');
         require_once (__DIR__ . '/../food/dish/get_custom_dish_id.php');
         require_once (__DIR__ . '/../food/dish/dish.php');
         
         require_once (__DIR__ . '/../json/json_format.php'); 
         require_once (__DIR__ . '/../json/json_output.php'); 
+        require_once (__DIR__ . '/../json/json_adjust.php');
         
         require_once (__DIR__ . '/../order/select_order.php');
         require_once (__DIR__ . '/../order/make_order.php');

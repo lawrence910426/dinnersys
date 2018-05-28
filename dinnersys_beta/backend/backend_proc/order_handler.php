@@ -11,7 +11,6 @@ function __construct()
         $user->init_serv();
         $_SESSION['user'] = serialize($user);
     }
-    $_SESSION['menu'] = serialize(get_dish(null));
 }
 
 function process_order()
@@ -29,11 +28,13 @@ function login()
     {
         $id = check_valid::white_list($_REQUEST['id'] ,check_valid::$white_list_pattern);
         $pswd = check_valid::white_list($_REQUEST['password'] ,check_valid::$white_list_pattern);
+        if($id == 'guest' && $pswd == 'guest') die("Not allow guest login.");
         $device_id = check_valid::white_list($_REQUEST['device_id'] ,check_valid::$white_list_pattern);
         $user = login($id ,$pswd ,$device_id);
         $user->init_serv();
+        $_SESSION['menu'] = serialize(get_dish(null ,null));
     }
-    catch(Exception $e) { die("Error login."); }
+    catch(Exception $e) { die($e->getMessage()); }
     
     $_SESSION['user'] = serialize($user);
     json_output::output(unserialize($_SESSION['user']));
@@ -42,13 +43,16 @@ function login()
 function logout() 
 {
     logout();
-    die("Successfully logged out.");
+    die("Successfully logout.");
 }
 
 function show_food()
 {
     $id = ($_REQUEST['factory_id'] == null ? null : check_valid::white_list($_REQUEST['factory_id'] ,check_valid::$only_number));
-    if($_REQUEST['cmd'] == 'show_dish') $result = get_dish($id);
+    if($_REQUEST['cmd'] == 'show_dish') {
+        $is_custom = ($_REQUEST['is_custom'] == null ? null : $_REQUEST['is_custom'] == 'true');
+        $result = get_dish($id ,$is_custom);
+    }
     if($_REQUEST['cmd'] == 'show_menu') $result = get_menu($id);
     json_output::output($result);
 }
@@ -61,10 +65,10 @@ function update_food()
         {
             $id = check_valid::white_list($_REQUEST['id'] ,check_valid::$only_number);
             $charge = check_valid::white_list($_REQUEST['charge'] ,check_valid::$only_number);
-            $name = $_REQUEST['name'];
+            $name = htmlspecialchars($_REQUEST['name']);
             $ingre_able = ($_REQUEST['ingre_able'] == 'true' ? true : false);
             $dish_able = ($_REQUEST['dish_able'] == 'true' ? true : false);
-            $vege = check_valid::white_list($_REQUEST['vege'] ,check_valid::$only_number);
+            $vege = check_valid::vege_check($_REQUEST['vege']);
             $idle = ($_REQUEST['idle'] == 'true' ? true : false);
             update_menu($id ,$charge ,$name ,$ingre_able ,$dish_able ,$vege ,$idle);
         }
@@ -72,7 +76,8 @@ function update_food()
         {
             $id = check_valid::white_list($_REQUEST['id'] ,check_valid::$only_number);
             $ingre_id = $_REQUEST['ingres'];
-            update_dish($id ,$ingre_id);
+            $is_idle = $_REQUEST['is_idle'] == 'true';
+            update_dish($id ,$is_idle ,$ingre_id);
         } 
     }catch(Exception $e) {die($e->getMessage()); }
     die("Successfully updated food.");
@@ -94,12 +99,12 @@ function show_order()
                 $class = true;
                 break;
             case 'select_other':
-                $user_id = ($_REQUEST['uid'] == null ? null : check_valid::white_list($_REQUEST['uid'] ,check_valid::$only_number));
+                $user_id = ($_REQUEST['uid'] == null ? null : intval(check_valid::white_list($_REQUEST['uid'] ,check_valid::$only_number)));
                 $person = $_REQUEST['person'] == 'true';
                 $class = $_REQUEST['class'] == 'true';
-                $class_no = ($_REQUEST['class_no'] == null ? null : check_valid::white_list($_REQUEST['class_no'] ,check_valid::$only_number));
-                $grade = ($_REQUEST['grade'] == null ? null : check_valid::white_list($_REQUEST['grade'] ,check_valid::$only_number));
-                $yr = ($_REQUEST['year'] == null ? null : check_valid::white_list($_REQUEST['year'] ,check_valid::$only_number));
+                $class_no = ($_REQUEST['class_no'] == null ? null : intval(check_valid::white_list($_REQUEST['class_no'] ,check_valid::$only_number)));
+                $grade = ($_REQUEST['grade'] == null ? null : intval(check_valid::white_list($_REQUEST['grade'] ,check_valid::$only_number)));
+                $yr = ($_REQUEST['year'] == null ? null : intval(check_valid::white_list($_REQUEST['year'] ,check_valid::$only_number)));
                 break;
             case 'select_everyone':
                 break;
@@ -118,9 +123,8 @@ function make_order()
     {
         $dish_id = check_valid::white_list($_REQUEST['dish_id'] ,check_valid::$only_number);
         $dish = unserialize($_SESSION['menu'])[$dish_id];
-        if($_REQUEST['time'] == null) $recv = date('Y-m-d H:i:s'); # For supporting the old versions.
-        else $recv = date_api::check_recv_time($_REQUEST['time']);
-        if($dish == null) throw new Exception();
+        $recv = date_api::check_recv_time($_REQUEST['time']);
+        if($dish == null) throw new Exception("Invalid dish id.");
         echo make_order(unserialize($_SESSION['user'])->id ,$dish_id ,$recv);
     }
     catch(Exception $e) { die($e->getMessage()); }
@@ -156,7 +160,7 @@ function change_password()
     try
     {
         $old_pswd = check_valid::white_list($_REQUEST['old_pswd'] ,check_valid::$white_list_pattern);
-        $new_pswd = check_valid::white_list($_REQUEST['new_pswd'] ,check_valid::$white_list_pattern);
+        $new_pswd = check_valid::pswd_check($_REQUEST['new_pswd']);
         $id = unserialize($_SESSION['user'])->id;
         change_password($id ,$old_pswd ,$new_pswd);
     }catch(Exception $e){die($e->getMessage());}
@@ -167,7 +171,7 @@ function delete_order()
 {
     try
     {
-        $id = check_valid::white_list($_REQUEST['order_id'] ,check_valid::$only_number);
+        $id = check_valid::white_list($_REQUEST['order_id'] ,check_valid::$only_number); 
         delete_order($id);
     }catch(Exception $e) {die($e->getMessage());}
     die("Succesfully deleted order.");
@@ -185,10 +189,10 @@ function register()
 {
     try
     {
-        $usr_name = check_valid::white_list($_REQUEST['user_name'] ,check_valid::$white_list_pattern);
+        $usr_name = htmlspecialchars($_REQUEST['user_name']);
         $phone_num = check_valid::regex_check($_REQUEST['phone_number'] ,check_valid::$phone_regex);
-        $is_vege = check_valid::white_list($_REQUEST['is_vege'] ,check_valid::$only_number);
-        $gen = check_valid::white_list($_REQUEST['gender'] ,check_valid::$white_list_pattern);
+        $is_vege = check_valid::vege_check($_REQUEST['is_vege']);
+        $gen = check_valid::gen_check($_REQUEST['gen']);
         $email = check_valid::regex_check($_REQUEST['email'] ,check_valid::$email_regex);
         $usr_login_id = check_valid::white_list($_REQUEST['login_id'] ,check_valid::$white_list_pattern);
         $pswd = check_valid::white_list($_REQUEST['password'] ,check_valid::$white_list_pattern);
@@ -205,7 +209,9 @@ function get_custom_dish_id()
         $tmp = []; $counter = 0;
         foreach($id as $value)
             $tmp[$counter++] = check_valid::white_list($value ,check_valid::$only_number);
-         echo get_custom_dish_id($tmp);
+        if($counter == 0) throw new Exception("Hasn't input id.");
+            echo get_custom_dish_id($tmp);
+        $_SESSION['menu'] = serialize(get_dish(null ,null));
     }catch(Exception $e) {die($e->getMessage());}    
 }
 
@@ -237,6 +243,13 @@ function announce_handle()
         done_announce($id ,$device_id);
         die('Succesfully recorded to server.');
     }
+}
+
+function show_factory()
+{
+    $id = ($_REQUEST['id'] == null ? null : intval(check_valid::white_list($_REQUEST['id'] ,check_valid::$only_number)));
+    $result = get_factory_info($id);
+    json_output::output($result);
 }
 
 }

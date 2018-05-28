@@ -60,7 +60,7 @@ class json_output
                 $json .= "{}";
         }
         
-        echo $json;
+        echo json_adjust::adjust($json);
     }
     
     public static function date_to_json($arr)

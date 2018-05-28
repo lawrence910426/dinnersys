@@ -33,9 +33,9 @@ class menu implements json_format
         $json = 
             '{"dish_name":"' . json_output::filter($this->name) .
             '","dish_id":"' . json_output::filter($this->id) . 
-            '","dish_cost":"' . json_output::filter($this->charge) . '"' .
-            '","dish_able":"' . ($this->dish_able ? 'true' : 'false') . '"' .
-            '","ingre_able":"' . ($this->ingre_able ? 'true' : 'false') . '"' .
+            '","dish_cost":"' . json_output::filter($this->charge) .
+            '","dish_able":"' . ($this->dish_able ? 'true' : 'false') .
+            '","ingre_able":"' . ($this->ingre_able ? 'true' : 'false') .
             '","is_idle":"' . ($this->is_idle ? 'true' : 'false') . '"' .
             ($this->factory != null ? ',"factory":' . $this->factory->get_json() : '') . '}';
         return $json;

@@ -2,7 +2,7 @@
 
 function change_password($user_id ,$old_password ,$new_password)
 {
-    $sql = "CALL change_password(? ,? ,?);";
+    $sql = "SELECT change_password(? ,? ,?);";
     
     $mysqli = $_SESSION['sql_server'];
     $statement = $mysqli->prepare($sql);
