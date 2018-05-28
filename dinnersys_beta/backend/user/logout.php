@@ -2,13 +2,8 @@
 
 function logout()
 {
-    $cmd = "CALL logout(?);";
-    $mysqli = $_SESSION['sql_server'];
-    $statement = $mysqli->prepare($cmd);
-    $statement->bind_param('i' ,unserialize($_SESSION['user'])->id);
-    $statement->execute();
-    
     $_SESSION['user'] = null;
+    include (__DIR__ . "/../../frontend/show_page/show_logged_out.php");
 }
     
 ?>

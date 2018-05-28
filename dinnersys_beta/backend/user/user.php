@@ -1,27 +1,33 @@
 <?php
 
 require_once (__DIR__ . "/../json/json_format.php");
+require_once (__DIR__ . "/previleges.php");
 
 class user implements json_format
 {
-    public $id;
-    public $name = "";
-    public $class_no;
-    public $able_serv;
-    
-    function __construct($usr_id ,$name ,$class_no)
+    public $user_id = -1;
+    public $user_name = "";
+    public $class_no = -1;
+    public $prev;
+
+    function __construct($id, $name, $prev ,$class_no)
     {
-        $this->id = $usr_id;
-        $this->name = $name;
+        $this->user_id = $id;
+        $this->user_name = $name;
         $this->class_no = $class_no;
+        $this->prev = new previleges($prev);
+    }
+
+    public function show_user($redir) #a temporary way to show the user.
+    {
+        $redirect = $redir;
+        include('show_user.php');
     }
     
-    public function init_serv()
+    public function get_order()
     {
-        $services = get_able_oper($this->id);
-        $_SESSION['able_serv'] = serialize($services);
-        foreach($services as $key => $value)
-            $this->able_serv[$key] = true;
+        require_once('/../order/get_orders.php');
+        return get_user_orders($this);
     }
     
     public function get_ip()
@@ -40,13 +46,17 @@ class user implements json_format
     public function get_json()
     {
         $data = 
-            '{"id":"' . json_output::filter($this->id) . 
-            '","name":"' . json_output::filter($this->name) .
-            '","class_no":"' . json_output::filter($this->class_no) .
-            '","valid_oper":' . json_output::array_to_json($this->able_serv) . '}';
+            '{"user_id":"' . json_output::filter($this->user_id) . 
+            '","user_name":"' . json_output::filter($this->user_name) .
+            '","class":"' . json_output::filter($this->class_no) .
+            '","previleges":"' . json_output::filter($this->prev->get_prev_string()) . 
+            '","ipaddress":"' . json_output::filter($this->get_ip()) .'"}';
 
         return $data;
     }
+    
+    public function get_prev_string() { return $this->prev->get_prev_string(); }
+    public function get_prev_code() { return $this->prev->get_prev_code(); }
 }
 
 ?>

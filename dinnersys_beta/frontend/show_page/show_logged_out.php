@@ -1,8 +1,3 @@
-<?php
-header('Location: '. '../frontend/');
-?>
-
-<!--
 <html>
     <body>
         <h3>
